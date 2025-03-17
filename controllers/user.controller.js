@@ -4,6 +4,7 @@ import sendmail from "../utils/sendmail.js";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcryptjs";
 
+
 const registerUser= async (req, res) =>{
     //create a new user
     const {name, email, password} = req.body
@@ -127,12 +128,10 @@ const loginUser = async(req,res) =>{
     //Now store this token in the cookie of the user
     const cookieOptions = {
         httpOnly:true,
-        secure:true,
+        secure:false,
         maxAge:24*60*60*1000
     }
-
-    res.cookie("token",token,cookieOptions)
-
+    res.cookie("token",token,cookieOptions);
     res.status(200).json({
         success:true,
         message:"login successful",
@@ -155,4 +154,28 @@ const loginUser = async(req,res) =>{
 
 }
 
-export {registerUser, veryfyUser, loginUser}
+const getUser = async(req, res)=>{ 
+    const id = req.user.id;
+    const user = await User.findById(id).select("-password");
+    if(!user){
+        return res.status(404).json({
+            success:false,
+            message:"User not found"
+        })
+    }
+    res.status(200).json({
+        success:true,
+        message:"User profile found",
+        user:user,
+    })
+}
+const logOut = async(req, res, next)=>{
+
+}
+const forgetPassword = async(req, res, next)=>{
+
+}
+const resetPasswor = async(req, res, next)=>{
+
+}
+export {registerUser, veryfyUser, loginUser, getUser, logOut, forgetPassword, resetPasswor}
