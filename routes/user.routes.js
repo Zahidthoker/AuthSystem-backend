@@ -9,5 +9,6 @@ router.get('/veryfy/:token',veryfyUser)
 router.post('/login', loginUser);
 router.get('/me',isLoggedIn,getUser)
 router.post('/logout',isLoggedIn,logOut)
+router.post('/forgetpassword',forgetPassword)
 
 export default router;

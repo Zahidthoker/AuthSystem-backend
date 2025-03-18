@@ -181,7 +181,33 @@ const logOut = async(req, res, next)=>{
 
 }
 const forgetPassword = async(req, res, next)=>{
+    const {email} = req.body;
+    const user = User.findOne({email});
+    if(!user){
+        return res.status(404).json({
+            success:false,
+            message:"Invalid email address"
+        })
+        
+    }
 
+    try {
+        const token = jwt.sign({id:user._id, role:user.role},process.env.SECRET,{expiresIn:'24h'});
+        user.resetPasswordToken = token;
+        user.resetPasswordExpiry =  Date.now() + 10*60*1000;
+        user.save;
+        sendmail(email,token);
+        console.log(token)
+        res.status(200).json({
+            success:true,
+            message:"reset password mail has been sent to your email id"
+        })
+    } catch (error) {
+        return res.status(404).json({
+            success:false,
+            message:`Error: ${error}`
+        })
+    }
 }
 const resetPasswor = async(req, res, next)=>{
 
