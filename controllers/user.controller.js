@@ -170,6 +170,14 @@ const getUser = async(req, res)=>{
     })
 }
 const logOut = async(req, res, next)=>{
+    const id = req.user.id;
+    const user = await User.findById(id);
+    user.token = null;
+    res.cookie('token','');
+    res.status(200).json({
+        success:true,
+        message:"Logged out successfully"
+    })
 
 }
 const forgetPassword = async(req, res, next)=>{
