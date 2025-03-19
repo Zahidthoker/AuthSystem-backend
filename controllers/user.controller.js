@@ -180,9 +180,9 @@ const logOut = async(req, res, next)=>{
     })
 
 }
-const forgetPassword = async(req, res, next)=>{
+const forgetPassword = async(req, res)=>{
     const {email} = req.body;
-    const user = User.findOne({email});
+    const user = await User.findOne({email});
     if(!user){
         return res.status(404).json({
             success:false,
@@ -195,9 +195,8 @@ const forgetPassword = async(req, res, next)=>{
         const token = jwt.sign({id:user._id, role:user.role},process.env.SECRET,{expiresIn:'24h'});
         user.resetPasswordToken = token;
         user.resetPasswordExpiry =  Date.now() + 10*60*1000;
-        user.save;
+        await user.save(); 
         sendmail(email,token);
-        console.log(token)
         res.status(200).json({
             success:true,
             message:"reset password mail has been sent to your email id"
@@ -209,7 +208,30 @@ const forgetPassword = async(req, res, next)=>{
         })
     }
 }
-const resetPasswor = async(req, res, next)=>{
+const resetPasswor = async(req, res)=>{
+    const {token} = req.params;
+    const {newPassword} = req.body;
+    const user = await User.findOne({
+        resetPasswordToken:token,
+        resetPasswordExpiry:{$gt:Date.now()}
+    });
+
+    if(!user){
+        return res.status(400).json({
+            success:false,
+            message:"cannot reset password, please try again"
+        })
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken=null;
+    user.resetPasswordExpiry=null;
+    await user.save();
+    res.status(200).json({
+        success:true,
+        message:"Password changed successfully"
+    })
+
 
 }
 export {registerUser, veryfyUser, loginUser, getUser, logOut, forgetPassword, resetPasswor}
